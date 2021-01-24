@@ -19,8 +19,13 @@ def check_host(ip):
 
 
 def get_ports(pstr):
-	if "-" not in pstr:
+	if "-" not in pstr and "," not in pstr:
 		return int(pstr)
+	elif "," in pstr:
+		ports = pstr.split(",")
+		for i in range(0,len(ports)):
+			ports[i] = int(ports[i])
+		return ports
 	else:
 		ports = pstr.split("-", 1)
 		ports[0] = int(ports[0])
@@ -50,10 +55,16 @@ def syn_stealth(port, ip):
 
 def init_ss(port, ip):
 	if check_host(ip):
-		if isinstance(port, list):
+		if isinstance(port, list) and len(port) < 2:
 			port_range = range(port[0], port[1]+1)
 			try:
 				for i in port_range:
+					syn_stealth(i, ip)
+			except KeyboardInterrupt:
+				sys.exit(1)
+		elif isinstance(port,list) and len(port) > 2:
+			try:
+				for i in port:
 					syn_stealth(i, ip)
 			except KeyboardInterrupt:
 				sys.exit(1)
@@ -173,7 +184,7 @@ print("-------------------------------------------------------------------------
 print("[!] USO:")
 print("-> -t, --target :  dirección IP objetivo")
 print("-> -m, --mode : modo de scaneo.\n	- sS  (TCP SYN Stealth scan)\n	- sT (TCP Connect Scan)\n	- sU (UDP Scan)\n 	- sX (XMAS Scan)'")
-print("-> -p, --port,ports : puerto o rango de puertos. EJ: 1-40")
+print("-> -p, --port,ports : puerto, rango de puertos o lista de puertos. EJ: 1-40, 22 o 22,24,29,45")
 print("---------------------------------------------------------------------------")
 options = get_options()
 print("\n---- Iniciando escaneo ----")
