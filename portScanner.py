@@ -18,7 +18,7 @@ def check_host(ip):
 		quit()
 
 
-def get_ports(pstr):
+def get_ports(pstr): # Parseo de los 3 tipos de str que recibimos con el parámetro -p
 	if "-" not in pstr and "," not in pstr:
 		return int(pstr)
 	elif "," in pstr:
@@ -38,6 +38,7 @@ def syn_stealth(port, ip):
 	# Si el puerto está abierto, recibe SYN-ACK y envía RST para no completar el handshake
 	# Si recibe RST (0x14) o no recibe respuesta, cerrado
 	# Si recibe ICMP ERROR tipo 3 con códigos 1,2,3,9,10 o 13, el puerto está filtrado y no se puede saber si está A/C.
+	# 1. No completa el handshake
 	s_port = RandShort()
 	synack = sr1(IP(dst=ip)/TCP(sport=s_port,dport=port, flags='S'),timeout=10) #Enviamos un paquete desde un puerto aleatorio
 	if 'NoneType' in str(type(synack)):
@@ -89,15 +90,22 @@ def tcp_connect(port, ip):
 
 
 def init_st(port, ip):
-        if check_host(ip):
-                if isinstance(port, list):
-                        port_range = range(port[0], port[1]+1)
-                        try:
-                                for i in port_range:
-                                        tcp_connect(i, ip)
-                        except KeyboardInterrupt:
-                                sys.exit(1)
-                else:
+	if check_host(ip):
+		if isinstance(port, list) and len(port) < 2:
+			port_range = range(port[0], port[1]+1)
+			try:
+				for i in port_range:
+					tcp_connect(i, ip)
+			except KeyboardInterrupt:
+				sys.exit(1)
+		elif isinstance(port,list) and len(port) > 2:
+			try:
+				for i in port:
+					tcp_connect(i, ip)
+			except KeyboardInterrupt:
+				sys.exit(1)
+
+		else:
                         tcp_connect(port, ip)
 
 
@@ -116,15 +124,23 @@ def udp_connect(port, ip):
 
 def init_su(port, ip):
         if check_host(ip):
-                if isinstance(port, list):
+                if isinstance(port, list) and len(port) < 2:
                         port_range = range(port[0], port[1]+1)
                         try:
                                 for i in port_range:
                                         udp_connect(i, ip)
                         except KeyboardInterrupt:
                                 sys.exit(1)
+                elif isinstance(port,list) and len(port) > 2:
+                        try:
+                                for i in port:
+                                        udp_connect(i, ip)
+                        except KeyboardInterrupt:
+                                sys.exit(1)
+
                 else:
                         udp_connect(port, ip)
+
 
 
 def xmas_scan(port, ip):
@@ -142,15 +158,23 @@ def xmas_scan(port, ip):
 
 def init_sx(port, ip):
         if check_host(ip):
-                if isinstance(port, list):
+                if isinstance(port, list) and len(port) < 2:
                         port_range = range(port[0], port[1]+1)
                         try:
                                 for i in port_range:
                                         xmas_scan(i, ip)
                         except KeyboardInterrupt:
                                 sys.exit(1)
+                elif isinstance(port,list) and len(port) > 2:
+                        try:
+                                for i in port:
+                                        xmas_scan(i, ip)
+                        except KeyboardInterrupt:
+                                sys.exit(1)
+
                 else:
                         xmas_scan(port, ip)
+
 
 
 def start_scan(options):
